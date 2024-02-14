@@ -2,7 +2,7 @@
 <html>
 <head>
 	<meta charset="utf-8">
-	<meta name="viewport" content="width=700">
+	<meta name="viewport" content="width=650">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<title>Long Live the Relationship</title>
 	<script type="text/javascript" src="jq.js"></script>
@@ -249,8 +249,10 @@
 			$(document).on('touchstart mousedown',function(e){
 				if(!isEnabled) return;
 
-				xFrom = e.pageX;
+				xFrom = e.clientX?e.clientX:e.touches[0].screenX;
 				isDrag = true;
+
+				console.log('yo');
 			})
 
 			$(document).on('touchend mouseup',function(e){
@@ -266,7 +268,10 @@
 			$(document).on('touchmove mousemove',function(e){
 				e.preventDefault();
 				if(!isDrag) return;
-				xTo = e.pageX;
+
+				
+
+				xTo = e.clientX?e.clientX:e.touches[0].screenX;
 				dx = xTo-xFrom;
 				$('card').css({left:dx, transform:'rotate('+dx/20+'deg)'});
 
@@ -357,14 +362,25 @@
 			  color: white;
 			  font-size: 20px;
 			  text-shadow: 0px 2px 5px black;
+
+			  width: 100vw;
+			  height: 100vh;
+
+			  background: #333;
+			
+			  box-sizing: border-box;
+
+			  touch-action: none;
+			  padding-top: 50px;
 		}
 
 		game{
-			width: 700px;
+			width: 650px;
 			height: 100vh;
-			background: #333;
+			
 			display: inline-block;
 			overflow: hidden;
+			touch-action: none;
 		}
 
 		manna{
