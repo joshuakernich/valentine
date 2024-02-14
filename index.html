@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Long Live the Relationship</title>
+	<script type="text/javascript" src="jq.js"></script>
+	<script type="text/javascript">
+		$(function(){
+
+
+			let icons = [ 'icon-love-outline.png', 'icon-safety.png', 'icon-comms.png', 'icon-juice.png' ];
+			let types = ['love','safety','communication','juicyness'];
+			let manna = [5,5,5,5];
+
+			let josh = 'char-josh.jpeg';
+			let joshuhoh = 'char-josh-uhoh.jpg';
+
+			let deathLoveMin = {img:joshuhoh, t:"I knew I was unloveable.", y:[-1,0,0,0],n:[-1,0,0,0]};
+			let deathLoveMax = {img:joshuhoh, t:"I can't concentrate on anything but this infinite love bubble.", y:[1,0,0,0],n:[1,0,0,0]};
+	
+			let deathSafetyMin = {img:joshuhoh, t:"My dear, our nervous systems are in complete meltdown!",y:[0,-1,0,0],n:[0,-1,0,0]};
+			let deathSafetyMax = {img:joshuhoh, t:"I'm so comfortable here, I think I'll just slumber indefinitely.",y:[0,1,0,0],n:[0,1,0,0]};
+
+			let deathCommsMin = {img:joshuhoh, t:"I can't remember the sound of your voice.",y:[0,0,-1,0],n:[0,0,-1,0]};
+			let deathCommsMax = {img:joshuhoh, t:"All we seem to do is talk, talk, talk!",y:[0,0,1,0],n:[0,0,1,0]};
+
+			let deathJuiceMin = {img:joshuhoh, t:"I feel like we're not even lovers any more.",y:[0,0,0,-1],n:[0,0,0,-1]};
+			let deathJuiceMax = {img:joshuhoh, t:"I literally can't stop fucking you.",y:[0,0,0,1],n:[0,0,0,1]};
+
+
+			let deathBy = [
+				[deathLoveMin,deathLoveMax],
+				[deathSafetyMin,deathSafetyMax],
+				[deathCommsMin,deathCommsMax],
+				[deathJuiceMin,deathJuiceMax],
+			]
+
+			let xFrom = 0;
+			let xTo = 0;
+			let dx = 0;
+			let isDrag = false;
+			let card;
+			let min = 30;
+			
+			
+			let cntSwipe = 0;
+			let isDeath = false;
+			let isEnabled = false;
+
+			let queue = [];
+
+			let cardIntro = {img:josh, t:"<hr>LONG LIVE THE RELATIONSHIP<hr>Can you survive<br>for 26 months?",n:[0,0,0,0], y:[0,0,0,0],yes:"Let's go!",no:"Let's go!"};
+			let cardFirst = {img:josh, t:"Hey beautiful. Wanna hang out again?",n:[-5,0,0,0], y:[2,0,0,0]};
+
+			let cards = [
+				
+				//josh
+				{img:josh, t:"Hey, let's perform a song at Open Stage!",n:[-2,0,0,0], y:[3,1,1,0],},
+				{img:josh, t:'Hey, you wanna do it in the butt tonight?',n:[0,0,2,-2], y:[0,0,0,2]},
+				{img:josh, t:"Hey! Come to London with me!",n:[-2,2,0,0], y:[2,-2,0,0]},
+				{img:josh, t:"Let's play Ultimate Jesus!",n:[0,0,-2,0], y:[2,0,0,0]},
+				{img:josh, t:"Wow! You are beautiful.", n:[0,0,-2,0],y:[2,0,0,2]},
+				{img:josh, t:"Would be so cool if you played Chess better.", n:[0,0,2,0],y:[2,0,0,0]},
+				{img:josh, t:"Hey! Let's get high and have a bone.", n:[0,0,0,-2],y:[0,0,0,2]},
+				{img:josh, t:"Hey, let's discuss gender politics.", n:[0,2,0,0],y:[0,-2,-2,0]},
+				{img:josh, t:"The way this sentence is worded infuriates me.", n:[0,0,2,0],y:[0,0,-2,0],no:'Fair enough',yes:'Let me explain'},
+
+				//lads
+				{img:'char-ripped.jpeg', t:'Yo yo, check out my enormous Penis.', n:[0,2,2,-2],y:[0,-2,0,2]},
+				{img:'char-will.jpeg', t:'Hey, wanna come back to my tent for some fun and games?', n:[0,0,0,-2],y:[0,0,0,2]},
+				{img:'char-sophie.jpeg', t:"Hey, let's all hang out for a cheeky weekend?", n:[0,0,0,-2],y:[0,0,2,2]},
+				{img:'char-throat.gif', t:"How's her form?",n:[0,2,0,0], y:[2,0,0,2],yes:"Good girl!",no:"Eww, gross!"},
+				
+				//work
+				{img:'char-jess.jpg', t:"Can you spend the weekend finishing off that report?",n:[0,0,2,0], y:[0,2,-2,0]},
+				{img:'char-jess.jpg', t:"Can you lock up the office, tonight?",n:[0,1,0,0], y:[0,-2,0,0]},
+
+				//drama
+				{img:'char-qatar.jpeg', t:"Quick, the airplane is boarding. Your boyfriend will have to find his own way here.",n:[0,2,0,0], y:[0,-3,0,0]},
+				{img:'char-qatar.jpeg', t:"Oh hi. Where are you off to today?",n:[0,2,0,0], y:[2,0,0,0],no:'Work Trip', yes:'Whirlwind Adventures'},
+
+				//icons
+				{img:'char-mary.png', t:"Mother Mary stands before you.",n:[0,0,2,0], y:[2,0,0,0],yes:"Pray",no:"Debate Theology"},
+				{img:'char-toad.jpg', t:"Where is Josh?",n:[0,2,0,0], y:[2,-2,0,0],no:"I'll never tell!",yes:"That way!"},
+				{img:'char-turtle.jpeg', t:"Boy, would I love a big gulp of air!",n:[0,0,2,0], y:[0,0,-2,0],no:"That's excessive!",yes:"Go for it!"},
+				{img:'char-peepee.webp', t:"Yo! How about a cuddle?",n:[-2,0,0,0], y:[2,0,0,0]},
+				{img:'char-judas.jpg', t:"Psst. Let's betray Josh.",n:[-2,2,0,0], y:[2,-2,0,0]},
+
+				//pop quiz
+				{img:'char-cumulus.jpeg',t:"What's this?", n:[0,0,-2,0],y:[0,0,2,0],yes:'Cumulus',no:'Stratocumulus'},
+				{img:'char-cirrus.jpeg',t:"What's this?", n:[0,0,2,0],y:[0,0,-2,0],yes:'Altostratus',no:'Cirrus'},
+				{img:'char-uke.webp', t:"What chord is this?",n:[0,0,2,0], y:[0,0,-2,0],yes:"D Chord",no:"C Chord"},
+			]
+
+			
+
+			let cumulative = [0,0,0,0];
+			for(var c in cards){
+				for(var n in cards[c].n) cumulative[n] += cards[c].n[n];
+				for(var y in cards[c].y) cumulative[y] += cards[c].y[y];
+			}
+	
+
+			function doCard(c){
+
+				card = c;
+
+
+				$('<cardback>').appendTo('deck').addClass('flipback');
+				$(`<card type=${card.type}>
+					
+		          <pic style=background-image:url(${card.img})></pic>
+		    
+		          <cardDetail>
+		            <h2>${card.t}</h2>
+		          </cardDetail>
+		          <no>${card.no?card.no:"No way!"}</no>
+		          <yes>${card.yes?card.yes:"Ok, sure!"}</yes>
+		        </card>`).appendTo('deck').addClass('flip');
+
+		        setTimeout(onFlip,1000);
+			}
+
+			function doDeathCard(card) {
+				isDeath = true;
+
+				card.no = "Oh no!";
+				card.yes = "Oh no!";
+				
+				doCard(card);
+			}
+
+			function nextCard(){
+
+				if(queue.length){
+					card = queue.pop();
+					doCard(card);
+				} else {
+					doWin();
+				}
+			}
+
+			function onFlip(){
+				$('cardback').remove();
+				$('card').removeClass('flip');
+
+				if( !queue.length || isDeath ) $('rear').hide();
+				else $('rear').show();
+
+				isEnabled = true;
+			}
+
+			function doWin() {
+				$('.endnote').html( '<hr>CONGRATULATIONS!<hr> Your relationship is perfectly balanced!');
+				$('.endnote').removeClass('hidden');
+				$('.score.actual').addClass('hidden');
+				$('.score.final').removeClass('hidden');
+				$('button').removeClass('hidden');
+			}
+
+			function doFinale() {
+
+				
+				let iType = 0;
+				let why = '';
+
+				for( var m in card.y ){
+					if(card.y[m] != 0){
+						iType = m;
+						why = ( card.y[m] > 0 )?'excessive':'insufficient';
+					}
+				}
+
+				$('.endnote').text( 'Your relatioship failed due to '+why+' '+types[iType]);
+
+				$('.endnote').addClass(why);
+
+				$('.endnote').removeClass('hidden');
+				$('.score.actual').addClass('hidden');
+				$('.score.final').removeClass('hidden');
+				$('button').removeClass('hidden');
+				
+			}
+
+			function onSwipeComplete() {
+				$('card').remove();
+
+				if(isDeath){
+					doFinale();
+					return;
+				}
+
+				
+
+				
+
+				$('fill').removeClass('positive negative')
+
+				for(var m in manna){
+					if(manna[m] <= 0){
+						doDeathCard(deathBy[m][0])
+						return
+					} else if(manna[m] >= 10){
+						doDeathCard(deathBy[m][1])
+						return
+					}
+
+				}
+
+				cntSwipe++;
+				rescore();
+
+				nextCard();
+			}
+
+			function doSwipe(b){
+
+				isEnabled = false;
+
+				$('manna').removeClass('hint');
+				$('card').animate({left:700*(b?1:-1)},200);
+
+				let increment = b?card.y:card.n;
+				for(var i in increment){
+					manna[i] += increment[i];
+
+					if(manna[i]>10) manna[i] = 10;
+					if(manna[i]<0) manna[i] = 0;
+
+					$('manna').eq(i).find('fill').css({height:manna[i]*10+'%'})
+
+					if(increment[i]>0) $('manna').eq(i).find('fill').addClass('positive');
+					if(increment[i]<0) $('manna').eq(i).find('fill').addClass('negative');
+				}
+
+				setTimeout(onSwipeComplete,800);
+			}
+
+			for(var m in manna){
+				$(`<manna n=${m}>
+					<fill style=height:${manna[m]*10}%></fill>
+		          	<icon style=background-image:url(${icons[m]})></icon>
+		        </manna>`).appendTo('mannas');
+			}
+
+			$(document).on('touchstart mousedown',function(e){
+				if(!isEnabled) return;
+
+				xFrom = e.pageX;
+				isDrag = true;
+			})
+
+			$(document).on('touchend mouseup',function(e){
+				isDrag = false;
+
+				if(!isEnabled) return;
+
+				if(dx>min || dx<-min) doSwipe( (dx>0) ); 
+				else $('card').css({left:0, transform:'rotate(0deg)'});
+			})
+
+			$(document).on('touchmove mousemove',function(e){
+				e.preventDefault();
+				if(!isDrag) return;
+				xTo = e.pageX;
+				dx = xTo-xFrom;
+				$('card').css({left:dx, transform:'rotate('+dx/20+'deg)'});
+
+				$('card').removeClass('yes no');
+				$('manna').removeClass('hint');
+
+				if(dx>min || dx<-min){
+
+					let b = (dx>0);
+					$('card').addClass(b?'yes':'no');
+
+					let increment = b?card.y:card.n;
+					
+					for(var i in increment) if(increment[i]!=0) $('manna').eq(i).addClass('hint');
+
+				}
+			})
+
+			
+
+			$('button').click(restart);
+
+			function rescore() {
+
+				let cnt = Math.max(0,cntSwipe);
+
+				$('.score').text(cnt + ' month'+(cnt==1?'':'s')+' survived');
+				if(cnt<1) $('.score').text('');
+			}
+
+			function restart() {
+
+				isDeath = false;
+				manna = [5,5,5,5];
+				cntSwipe = -1;
+
+				queue = shuffle( cards.concat() );
+				queue.push(cardFirst);
+				queue.push(cardIntro);
+
+
+				$('fill').css({'height':'50%'}).removeClass('positive negative');
+
+				$('.actual').removeClass('hidden');
+
+				$('.endnote').addClass('hidden');
+				$('.endnote').removeClass('excessive insufficient');
+
+				$('.final').addClass('hidden');
+				$('button').addClass('hidden');
+				$('rear').show();
+
+				rescore();
+				nextCard();
+			}
+
+			function shuffle(array) {
+			  let currentIndex = array.length,  randomIndex;
+
+			  while (currentIndex > 0) {
+
+			    randomIndex = Math.floor(Math.random() * currentIndex);
+			    currentIndex--;
+
+			    [array[currentIndex], array[randomIndex]] = [
+			      array[randomIndex], array[currentIndex]];
+			  }
+
+			  return array;
+			}
+
+
+			restart();
+
+		})
+	</script>
+	<style type="text/css">
+		@import url('https://fonts.googleapis.com/css2?family=Love+Ya+Like+A+Sister&display=swap');
+
+		body{
+			padding: 0px;
+			margin: 0px;
+			background: black;
+			text-align: center;
+			font-family: "Love Ya Like A Sister", cursive;
+			  font-weight: 400;
+			  font-style: normal;
+			  color: white;
+			  font-size: 20px;
+			  text-shadow: 0px 2px 5px black;
+		}
+
+		game{
+			width: 800px;
+			height: 100vh;
+			background: #333;
+			display: inline-block;
+			overflow: hidden;
+		}
+
+		manna{
+			width: 50px;
+			height: 50px;
+			
+			margin: 50px 30px;
+			background: #444;
+			display: inline-block;
+			line-height: 100px;
+			position: relative;
+			
+		}
+
+		manna.hint:after{
+			content: "";
+			width: 10px;
+			height: 10px;
+			border-radius: 10px;
+			background: #999;
+			position: absolute;
+			top: -20px;
+			left: 20px;
+			display: block;
+		}
+
+		pic{
+			position: absolute;
+			left: 0px;
+			right: 0px;
+			bottom: 0px;
+			top: 0px;
+			background-size: cover;
+			background-position: center;
+
+			box-sizing: border-box;
+
+
+		}
+
+		h1{
+			position: relative;
+		}
+
+
+		carddetail{
+			position: absolute;
+			left: 0px;
+			right: 0px;
+			bottom: 0px;
+			padding: 50px 50px 20px 50px;
+			background: linear-gradient(to top, rgba(0,0,0,0.5), transparent);
+		}
+
+		card, deck{
+			
+			width: 450px;
+			height: 500px;
+			display: inline-block;
+			
+
+			position: relative;
+		}
+
+		card, rear, cardback{
+			width: 100%;
+			height: 100%;
+			position: absolute;
+			left: 0px;
+			top: 0px;
+			background: #444;
+			box-sizing: border-box;
+			padding: 50px;
+			border-radius: 50px;
+			box-shadow: 0px 2px 5px black;
+			overflow: hidden;
+		}
+
+		yes{
+			position: absolute;
+			right: 0px;
+			top: 0px;
+			padding: 20px 30px 50px 50px;
+			opacity: 0;
+			transition: all 0.5s;
+			background: linear-gradient(to bottom left, rgba(0,0,0,0.5), transparent, transparent);
+			font-size: 30px;
+		}
+
+		no{
+			position: absolute;
+			left: 0px;
+			top: 0px;
+			padding: 20px 50px 50px 30px;
+			opacity: 0;
+			transition: all 0.5s;
+			background: linear-gradient(to bottom right, rgba(0,0,0,0.5), transparent, transparent);
+			font-size: 30px;
+		}
+
+		card.yes yes{
+			opacity: 1;
+		}
+
+		card.no no{
+			opacity: 1;
+		}
+
+
+		deck{
+			  
+			  
+			perspective: 800px;
+		}
+
+		.flip{
+			animation-name: flip;
+			animation-duration: 1s;
+			animation-iteration-count: 1;
+			animation-fill-mode: forwards;
+			backface-visibility: hidden;
+		}
+
+		.flipback{
+			animation-name: flipback;
+			animation-duration: 1s;
+			animation-iteration-count: 1;
+			animation-fill-mode: forwards;
+			backface-visibility: hidden;
+		}
+
+		rear, cardback{
+			background-image: url('card-bg.jpeg');
+			border: 10px solid #444;
+		}
+
+
+
+
+
+		pic{
+			display: block;
+			position: absolute;
+			top: 0px;
+			left: 0px;
+			right: 0px;
+			bottom: 0px;
+		}
+
+		fill{
+			display: block;
+			position: absolute;
+			bottom: 0px;
+			left: 0px;
+			right: 0px;
+			background: #666;
+			transition: height 0.5s;
+			
+		}
+
+		fill.positive{
+			background: limegreen;
+		}
+
+		fill.negative{
+			background: red;
+		}
+
+		.excessive{
+			color: limegreen;
+		}
+
+		.insufficient{
+			color: red;
+		}
+
+
+		icon{
+			display: block;
+			position: absolute;
+			top: 0px;
+			left: 0px;
+			right: 0px;
+			bottom: 0px;
+			
+			
+			line-height: 90px;
+			background-position: center;
+			background-size: 100%;
+			background-repeat: no-repeat;
+			
+		}
+
+		button{
+			font-size: inherit;
+			font-family: inherit;
+			background: transparent;
+			border: 3px solid white;
+			box-shadow: 0px 1px 5px black;
+			padding: 10px 20px;
+			border-radius: 10px;
+			color: inherit;
+			font-size: 2em;
+
+			transition: all 0.5s;
+			transition-delay: 1s;
+			opacity: 1;
+			text-shadow: 0px 2px 5px black;
+
+			font-weight: bold;
+		}
+
+		h1{
+			transition: all 0.5s;
+			opacity: 1;
+		}
+
+		.hidden{
+			opacity: 0;
+		}
+
+
+
+		@keyframes flipback{
+			0%{
+				top: 0px;
+				left: 0px;
+				transform: rotate3d(0, 1, 0, 0deg);
+			}
+
+			70%{
+				top: 10%;
+				left: 10%;
+				transform: rotate3d(0, 1, 0, -160deg);
+			}
+
+			100%{
+				top: 0px;
+				left: 0px;
+				transform: rotate3d(0, 1, 0, -180deg);
+			}
+		}
+
+		@keyframes flip{
+			0%{
+				top: 0px;
+				left: 0px;
+				transform: rotate3d(0, 1, 0, 180deg);
+			}
+
+			70%{
+				top: 10%;
+				left: 10%;
+				transform: rotate3d(0, 1, 0, 20deg);
+			}
+
+			100%{
+				top: 0px;
+				left: 0px;
+				transform: rotate3d(0, 1, 0, 0deg);
+			}
+		}
+		
+	</style>
+</head>
+<body>
+	<game>
+		<mannas></mannas>
+		<cards>
+			<deck>
+				<h1 class="endnote hidden">Your relationship failed due to excessive love</h1>
+				<h1 class="score final hidden">0 months survived</h1>
+				<button class="hidden">Try Again</button>
+				<rear></rear>
+				
+			</deck>
+		</cards>
+		<h1 class="score actual">score</h1>
+	</game>
+</body>
+</html>
