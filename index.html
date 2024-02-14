@@ -173,7 +173,7 @@
 					}
 				}
 
-				$('.endnote').text( 'Your relatioship failed due to '+why+' '+types[iType]);
+				$('.endnote').text( 'Your relationship failed due to '+why+' '+types[iType]);
 
 				$('.endnote').addClass(why);
 
@@ -250,8 +250,6 @@
 
 				xFrom = e.clientX?e.clientX:e.touches[0].screenX;
 				isDrag = true;
-
-				console.log('yo');
 			})
 
 			$(document).on('touchend mouseup',function(e){
@@ -267,8 +265,6 @@
 			$(document).on('touchmove mousemove',function(e){
 				e.preventDefault();
 				if(!isDrag) return;
-
-				
 
 				xTo = e.clientX?e.clientX:e.touches[0].screenX;
 				dx = xTo-xFrom;
@@ -391,6 +387,7 @@
 			display: inline-block;
 			line-height: 100px;
 			position: relative;
+			border: 1px solid #333;
 			
 		}
 
